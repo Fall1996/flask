@@ -3,11 +3,14 @@ from ticket_generator import TicketCaisse
 from datetime import datetime
 import os
 import json
-
+from pathlib import Path
 app = Flask(__name__)
 
+
+TICKETS_FOLDER = os.path.join(Path(__file__).parent.absolute(), 'tickets')
+os.makedirs(TICKETS_FOLDER, exist_ok=True, mode=0o777)
 # Dossier pour stocker les tickets PDF
-TICKETS_FOLDER = 'tickets'
+#TICKETS_FOLDER = 'tickets'
 if not os.path.exists(TICKETS_FOLDER):
     os.makedirs(TICKETS_FOLDER)
 
