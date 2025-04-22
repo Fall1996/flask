@@ -43,14 +43,22 @@ def index():
     return render_template('index.html', numero_vente=next_number)
 
 @app.route('/ticket/<numero_vente>')
+#def get_ticket(numero_vente):
+ #   """Route pour accéder au fichier PDF"""
+  #  try:
+   #     filename = f"ticket_{numero_vente}.pdf"
+    #    return send_from_directory(TICKETS_FOLDER, filename)
+    #except Exception as e:
+     #   return f"Erreur lors de l'accès au ticket: {str(e)}", 404
 def get_ticket(numero_vente):
-    """Route pour accéder au fichier PDF"""
-    try:
-        filename = f"ticket_{numero_vente}.pdf"
-        return send_from_directory(TICKETS_FOLDER, filename)
-    except Exception as e:
-        return f"Erreur lors de l'accès au ticket: {str(e)}", 404
-
+    filename = f"ticket_{numero_vente}.pdf"
+    filepath = os.path.join(TICKETS_FOLDER, filename)
+    
+    if not os.path.exists(filepath):
+        app.logger.error(f"Fichier non trouvé : {filepath}")
+        return f"Ticket {numero_vente} introuvable", 404
+    
+    return send_from_directory(TICKETS_FOLDER, filename)
 @app.route('/generer_ticket', methods=['POST'])
 def generer_ticket():
     try:
