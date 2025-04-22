@@ -8,8 +8,9 @@ class TicketCaisse:
         self.pdf = FPDF(format='A5')
         self.pdf.add_page()
         # Ajout de support pour les caractères spéciaux
-        self.pdf.add_font('Arial', '', 'C:\\Windows\\Fonts\\arial.ttf', uni=True)
-        self.pdf.set_font('Arial', '', 8)
+       # self.pdf.add_font('Arial', '', 'C:\\Windows\\Fonts\\arial.ttf', uni=True)
+       # self.pdf.set_font('Arial', '', 8)
+         self.pdf.set_font('helvetica', '', 8)
         self.pdf.set_auto_page_break(auto=True, margin=10)
         self.current_y = 10
         self.produits = []
