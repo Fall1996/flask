@@ -116,9 +116,22 @@ def generer_ticket():
             as_attachment=True,
             download_name=filename
         )
+        filepath = os.path.join(TICKETS_FOLDER, filename)
+        ticket.save(filepath)
         
+        # Debug : Vérifie que le fichier existe
+        if not os.path.exists(filepath):
+            app.logger.error(f"ERREUR: Fichier non créé : {filepath}")
+            return "Erreur lors de la création du PDF", 500
+        
+        app.logger.info(f"PDF généré avec succès : {filepath}")
+        return send_file(filepath, as_attachment=True)
     except Exception as e:
-        return f"Erreur lors de la génération du ticket: {str(e)}", 400
+        app.logger.error(f"ERREUR: {str(e)}")
+        return f"Erreur : {str(e)}", 400
+        
+  #  except Exception as e:
+   #     return f"Erreur lors de la génération du ticket: {str(e)}", 400
 
 if __name__ == '__main__':
     app.run(debug=True) 
