@@ -1,16 +1,13 @@
-from flask import Flask, render_template, request, send_file, send_from_directory
+from flask import Flask, render_template, request, send_file, send_from_directory, make_response
 from ticket_generator import TicketCaisse
 from datetime import datetime
 import os
 import json
-from pathlib import Path
+
 app = Flask(__name__)
 
-
-TICKETS_FOLDER = os.path.join(Path(__file__).parent.absolute(), 'tickets')
-os.makedirs(TICKETS_FOLDER, exist_ok=True, mode=0o777)
 # Dossier pour stocker les tickets PDF
-#TICKETS_FOLDER = 'tickets'
+TICKETS_FOLDER = 'tickets'
 if not os.path.exists(TICKETS_FOLDER):
     os.makedirs(TICKETS_FOLDER)
 
@@ -46,22 +43,14 @@ def index():
     return render_template('index.html', numero_vente=next_number)
 
 @app.route('/ticket/<numero_vente>')
-#def get_ticket(numero_vente):
- #   """Route pour accéder au fichier PDF"""
-  #  try:
-   #     filename = f"ticket_{numero_vente}.pdf"
-    #    return send_from_directory(TICKETS_FOLDER, filename)
-    #except Exception as e:
-     #   return f"Erreur lors de l'accès au ticket: {str(e)}", 404
 def get_ticket(numero_vente):
-    filename = f"ticket_{numero_vente}.pdf"
-    filepath = os.path.join(TICKETS_FOLDER, filename)
-    
-    if not os.path.exists(filepath):
-        app.logger.error(f"Fichier non trouvé : {filepath}")
-        return f"Ticket {numero_vente} introuvable", 404
-    
-    return send_from_directory(TICKETS_FOLDER, filename)
+    """Route pour accéder au fichier PDF"""
+    try:
+        filename = f"ticket_{numero_vente}.pdf"
+        return send_from_directory(TICKETS_FOLDER, filename)
+    except Exception as e:
+        return f"Erreur lors de l'accès au ticket: {str(e)}", 404
+
 @app.route('/generer_ticket', methods=['POST'])
 def generer_ticket():
     try:
@@ -110,28 +99,20 @@ def generer_ticket():
         filepath = os.path.join(TICKETS_FOLDER, filename)
         ticket.save(filepath)
         
-        # Envoi du fichier PDF
-        return send_file(
+        # Créer la réponse pour le téléchargement
+        response = make_response(send_file(
             filepath,
             as_attachment=True,
             download_name=filename
-        )
-        filepath = os.path.join(TICKETS_FOLDER, filename)
-        ticket.save(filepath)
+        ))
         
-        # Debug : Vérifie que le fichier existe
-        if not os.path.exists(filepath):
-            app.logger.error(f"ERREUR: Fichier non créé : {filepath}")
-            return "Erreur lors de la création du PDF", 500
+        # Ajouter un en-tête pour rediriger après le téléchargement
+        response.headers['X-Redirect-After-Download'] = '/'
         
-        app.logger.info(f"PDF généré avec succès : {filepath}")
-        return send_file(filepath, as_attachment=True)
+        return response
+        
     except Exception as e:
-        app.logger.error(f"ERREUR: {str(e)}")
-        return f"Erreur : {str(e)}", 400
-        
-  #  except Exception as e:
-   #     return f"Erreur lors de la génération du ticket: {str(e)}", 400
+        return f"Erreur lors de la génération du ticket: {str(e)}", 400
 
 if __name__ == '__main__':
     app.run(debug=True) 
